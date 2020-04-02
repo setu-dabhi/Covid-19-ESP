@@ -1,8 +1,7 @@
 #include <M5StickC.h>
 
-#define LED_BUILTIN 2
 #define SENSOR  36
-
+#define RESET 2
 long currentMillis = 0;
 long previousMillis = 0;
 int interval = 100;
@@ -20,13 +19,15 @@ float max1 = 37;
 float min1 = 0;
 float y = 0;
 
+int timmer = 0;
+int xpoint = 0;
+int ypoint = 0;
+
 void IRAM_ATTR pulseCounter()
 {
   pulseCount++;
 }
 
-
-int in_pin = 36; //input pin for analog sensor
 
 // the setup routine runs once when M5StickC starts up
 void setup(){
@@ -35,6 +36,7 @@ void setup(){
   Serial.begin(115200);
  
   pinMode(SENSOR, INPUT);
+  pinMode(RESET, INPUT);
   M5.Lcd.setRotation(3);
   M5.Lcd.setCursor(45, 30);
   M5.Lcd.setTextSize(1);
@@ -93,28 +95,63 @@ void loop() {
     //M5.Lcd.setCursor(45, 45);
     //M5.Lcd.print(totalMilliLitres / 1000);
     y = (((s1 - s2)/(max1 - min1))*(flowRate - min1) + s2);
-    M5.Lcd.drawCircle(60, 40, 30, RED); 
-    M5.Lcd.fillCircle(60, 40, y, RED);
+    M5.Lcd.drawCircle(35, 40, 30, RED); 
+    M5.Lcd.drawLine(73, 75, 155, 75, WHITE); //Xaxis line
+    M5.Lcd.drawLine(73, 30, 73, 75, WHITE); //Yaxis line
+    M5.Lcd.fillCircle(35, 40, y, RED);
+    //M5.Lcd.drawPixel(int16_t x, int16_t y, BLUE);
+    ypoint = int(flowRate);
+    /*
+    while( xpoint < 155 && ypoint < 75){
+       
+    }
+    */
+    //M5.Lcd.drawPixel(xpoint + 73, 75 - ypoint, GREEN);
+    M5.Lcd.drawLine(int(xpoint + 74), int(74 - ypoint), int(xpoint + 73), int(75 - ypoint), GREEN); 
+      // delay(200);
+       xpoint = xpoint + 1;
+/*
+    if (xpoint == 155){
+      
+    }
+*/
+    if (xpoint == 100){
+      M5.Lcd.fillRect(74, 30, 85, 45, BLACK);
+      xpoint = 0;
+      ypoint = 0;
+    }
+    
+
+      
     if (y >= 30){
-      M5.Lcd.fillCircle(60, 40, y, GREEN);
+      M5.Lcd.fillCircle(35, 40, y, GREEN);
     }
     delay(90);
-    M5.Lcd.fillCircle(60, 40, y, BLACK);
+    M5.Lcd.fillCircle(35, 40, y, BLACK);
     if (y >= 30){
-      M5.Lcd.fillCircle(60, 40, y, GREEN);
+      M5.Lcd.fillCircle(35, 40, y, GREEN);
       delay(500);
-      M5.Lcd.fillCircle(60, 40, y, BLACK);
+      M5.Lcd.fillCircle(35, 40, y, BLACK);
+    }
+    M5.Lcd.setCursor(68, 10);
+    M5.Lcd.setTextSize(1);
+    M5.Lcd.print("FRate");
+    M5.Lcd.setCursor(68, 20);
+    M5.Lcd.print("Total");
+    M5.Lcd.setCursor(105, 10);
+    M5.Lcd.setTextSize(1);
+    M5.Lcd.print(flowRate);
+    M5.Lcd.setCursor(105, 20);
+    M5.Lcd.print(totalMilliLitres / 1000);
+    M5.Lcd.setCursor(140, 10);
+    M5.Lcd.print("L/m");
+    M5.Lcd.setCursor(140, 20);
+    M5.Lcd.print("ml");
+    if (digitalRead(RESET) == 1){
+      totalMilliLitres =0;
+      M5.Lcd.setCursor(105, 20);
+      M5.Lcd.print(totalMilliLitres/1000);
     }
     
-    
   }
-
-
-  
-  
-  
-  
-  
-  
-  //M5.Lcd.print(in_pin);
 }
